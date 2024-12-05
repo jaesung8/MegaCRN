@@ -156,7 +156,7 @@ def traintest_model():
 
 #########################################################################################    
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, choices=['METRLA', 'PEMSBAY'], default='METRLA', help='which dataset to run')
+parser.add_argument('--dataset', type=str, default='METRLA', help='which dataset to run')
 parser.add_argument('--trainval_ratio', type=float, default=0.8, help='the ratio of training and validation data among the total')
 parser.add_argument('--val_ratio', type=float, default=0.125, help='the ratio of validation data among the trainval ratio')
 parser.add_argument('--num_nodes', type=int, default=207, help='num_nodes')
@@ -193,6 +193,12 @@ if args.dataset == 'METRLA':
 elif args.dataset == 'PEMSBAY':
     data_path = f'../{args.dataset}/pems-bay.h5'
     args.num_nodes = 325
+elif args.dataset == 'abilene':
+    data_path = f'../{args.dataset}/{args.dataset}_traffic.csv'
+    args.num_nodes = 30
+elif args.dataset == 'geant':
+    data_path = f'../{args.dataset}/{args.dataset}_traffic.csv'
+    args.num_nodes = 72
 else:
     pass # including more datasets in the future    
 

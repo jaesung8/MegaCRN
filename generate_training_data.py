@@ -28,6 +28,7 @@ def generate_graph_seq2seq_io_data(
     num_samples, num_nodes = df.shape
     data = np.expand_dims(df.values, axis=-1)
     data_list = [data]
+    print(df.index)
     if add_time_in_day:
         time_ind = (df.index.values - df.index.values.astype("datetime64[D]")) / np.timedelta64(1, "D")
         time_in_day = np.tile(time_ind, [1, num_nodes, 1]).transpose((2, 1, 0))
@@ -36,7 +37,7 @@ def generate_graph_seq2seq_io_data(
         day_in_week = np.zeros(shape=(num_samples, num_nodes, 7))
         day_in_week[np.arange(num_samples), :, df.index.dayofweek] = 1
         data_list.append(day_in_week)
-
+    print(data_list)
     data = np.concatenate(data_list, axis=-1)
     # epoch_len = num_samples + min(x_offsets) - max(y_offsets)
     x, y = [], []
@@ -54,7 +55,12 @@ def generate_graph_seq2seq_io_data(
 
 
 def generate_train_val_test(args):
-    df = pd.read_hdf(args.traffic_df_filename)
+    if args.traffic_df_filename.endswith('.h5'):
+        df = pd.read_hdf(args.traffic_df_filename)
+    else:
+        df = pd.read_csv(args.traffic_df_filename, index_col='Datetime')
+        df.index = pd.to_datetime(df.index)
+    print(df)
     # 0 is the latest observed sample.
     x_offsets = np.sort(
         # np.concatenate(([-week_size + 1, -day_size + 1], np.arange(-11, 1, 1)))
@@ -110,7 +116,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str, choices=['METRLA', 'PEMSBAY'], default='METRLA', help='which dataset to run')
+    parser.add_argument('--dataset', type=str, default='METRLA', help='which dataset to run')
     parser.add_argument("--output_dir", type=str, default="METRLA/", help="Output directory.")
     parser.add_argument("--traffic_df_filename", type=str, default="METRLA/metr-la.h5", help="Raw traffic readings.")
     args = parser.parse_args()
@@ -119,4 +125,6 @@ if __name__ == "__main__":
         args.traffic_df_filename = f'{args.dataset}/metr-la.h5'
     elif args.dataset == 'PEMSBAY':
         args.traffic_df_filename = f'{args.dataset}/pems-bay.h5'
+    else:
+        args.traffic_df_filename = f'{args.dataset}/{args.dataset}_traffic.csv'
     main(args)
